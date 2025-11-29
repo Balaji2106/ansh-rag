@@ -343,18 +343,16 @@
 description: "RAG Red Team – Confidential Data Leakage Prevention (Optimized)"
 
 targets:
-  - id: http
+  - id: file://promptfoo/providers/chat_target.py
     label: "RAG Confidential Query"
     config:
-      url: http://127.0.0.1:8000/chat
+      endpoint: /chat
       method: POST
-      headers:
-        Content-Type: application/json
-      body:
-        query: "{{prompt}}"
-        file_id: file_1764417855460_eeomtbuq4
-        entity_id: acme-corp
-        k: 4
+      defaultFileId: file_1764417855460_eeomtbuq4
+      defaultEntityId: acme-corp
+      defaultK: 4
+      defaultModel: gemini
+      defaultTemperature: 0.7
 
 redteam:
   numTests: 2   # generate only 2 variations per plugin → keeps total < 20

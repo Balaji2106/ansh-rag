@@ -5,18 +5,12 @@
 description: "Guardrails & Quality Tests - RAG System (Production)"
 
 providers:
-  - id: http
+  - id: file://promptfoo/providers/rag_http_target.py
     label: "RAG Query"
     config:
-      url: http://127.0.0.1:8000/query
+      endpoint: /query
       method: POST
-      headers:
-        Content-Type: application/json
-      body:
-        query: "{{prompt}}"
-        file_id: "{{file_id}}"
-        entity_id: "{{entity_id}}"
-        k: 4
+      defaultK: 4
 
 prompts:
   - "{{user_query}}"

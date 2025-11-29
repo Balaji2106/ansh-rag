@@ -7,49 +7,28 @@ description: "Model Comparison - Gemini vs Azure (Production)"
 # Define multiple chat configurations for comparison
 providers:
   # Provider 1: Current production (Gemini Pro)
-  - id: http
+  - id: file://promptfoo/providers/chat_target.py
     label: "Gemini Pro (Current)"
     config:
-      url: http://127.0.0.1:8000/chat
+      endpoint: /chat
       method: POST
-      headers:
-        Content-Type: application/json
-      body:
-        query: "{{prompt}}"
-        file_id: testid1
-        entity_id: model-compare
-        k: 4
-        model: "gemini-pro"  # Add if your API supports model selection
+      defaultFileId: testid1
+      defaultEntityId: model-compare
+      defaultK: 4
+      defaultModel: gemini
+      defaultTemperature: 0.7
 
-  # Provider 2: Gemini 2.0 Flash (Testing)
-  - id: http
-    label: "Gemini 2.0 Flash (New)"
-    config:
-      url: http://127.0.0.1:8000/chat
-      method: POST
-      headers:
-        Content-Type: application/json
-      body:
-        query: "{{prompt}}"
-        file_id: testid1
-        entity_id: model-compare
-        k: 4
-        model: "gemini-2.0-flash"  # Add if your API supports model selection
-
-  # Provider 3: Azure GPT-4o-mini (Alternative)
-  - id: http
+  # Provider 2: Azure GPT-4o-mini (Alternative)
+  - id: file://promptfoo/providers/chat_target.py
     label: "Azure GPT-4o-mini"
     config:
-      url: http://127.0.0.1:8000/chat
+      endpoint: /chat
       method: POST
-      headers:
-        Content-Type: application/json
-      body:
-        query: "{{prompt}}"
-        file_id: testid1
-        entity_id: model-compare
-        k: 4
-        model: "gpt-4o-mini"  # Add if your API supports model selection
+      defaultFileId: testid1
+      defaultEntityId: model-compare
+      defaultK: 4
+      defaultModel: azure-gpt4o-mini
+      defaultTemperature: 0.7
 
 prompts:
   - "{{user_query}}"
@@ -252,7 +231,6 @@ metadata:
   testType: "model-comparison"
   models:
     - "Gemini Pro"
-    - "Gemini 2.0 Flash"
     - "Azure GPT-4o-mini"
   dimensions:
     - "quality"
