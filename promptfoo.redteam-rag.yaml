@@ -174,7 +174,7 @@ redteam:
     to make attacks realistic and contextual.
 
 # Output configuration
-outputPath: ./promptfoo-output/redteam-rag
+outputPath: ./promptfoo-output/redteam-rag.html
 
 # Metadata for reporting
 metadata:
