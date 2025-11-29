@@ -10,3 +10,6 @@ venv/
 dev.yml
 SHOPIFY.md
 /node_modules
+confidential_company_data.txt
+promptfoo-output/redteam-confidential.html
+promptfoo-output/guardrails-llm.json
