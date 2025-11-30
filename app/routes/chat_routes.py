@@ -208,9 +208,11 @@ async def chat_with_documents(request: Request, body: ChatRequest):
             answer = await generate_azure_response(messages, body.temperature)
             model_used = "Azure GPT-4o-mini"
         elif body.model in ["gemini", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"]:
+            # Map generic "gemini" to the default model
+            actual_model = "gemini-2.5-flash" if body.model == "gemini" else body.model
             prompt = create_rag_prompt(body.query, context)
-            answer = await generate_gemini_response(prompt, body.temperature, body.model)
-            model_used = f"Google Gemini ({body.model})"
+            answer = await generate_gemini_response(prompt, body.temperature, actual_model)
+            model_used = f"Google Gemini ({actual_model})"
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
