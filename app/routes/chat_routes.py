@@ -151,7 +151,20 @@ async def generate_gemini_response(prompt: str, temperature: float, model_name: 
             prompt,
             generation_config=generation_config
         )
-        return response.text
+
+        # Check if response has text (not blocked by safety filters)
+        try:
+            return response.text
+        except ValueError as e:
+            # Response blocked by safety filters or other content policy
+            finish_reason = getattr(response.candidates[0], 'finish_reason', None) if response.candidates else None
+            if finish_reason == 2:  # SAFETY
+                return "I cannot provide a response to this query due to content safety policies."
+            elif finish_reason == 3:  # RECITATION
+                return "I cannot provide a response as it may contain recited content."
+            else:
+                return "I cannot generate a response for this query."
+
     except Exception as e:
         logger.error(f"Gemini API error: {str(e)}")
         raise HTTPException(
