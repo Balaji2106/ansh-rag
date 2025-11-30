@@ -3,9 +3,7 @@ import os
 from typing import List
 from fastapi import APIRouter, Request, HTTPException, status
 from openai import AzureOpenAI
-from azure.core.credentials import AzureKeyCredential
 import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
 from app.config import logger, vector_store
 from app.models import ChatRequest, ChatResponse, SourceDocument
@@ -141,17 +139,9 @@ async def generate_azure_response(messages: List[dict], temperature: float) -> s
 
 
 async def generate_gemini_response(prompt: str, temperature: float, model_name: str = 'gemini-2.5-flash') -> str:
-    """Generate response using Google Gemini."""
+    """Generate response using Google Gemini - simple and straightforward like Azure."""
     try:
         model = get_gemini_client(model_name)
-
-        # Configure safety settings to be more permissive for internal RAG use
-        safety_settings = {
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-        }
 
         generation_config = {
             "temperature": temperature,
@@ -160,22 +150,15 @@ async def generate_gemini_response(prompt: str, temperature: float, model_name: 
 
         response = model.generate_content(
             prompt,
-            generation_config=generation_config,
-            safety_settings=safety_settings
+            generation_config=generation_config
         )
 
-        # Check if response has text (not blocked by safety filters)
+        # Simple text extraction with graceful error handling
         try:
             return response.text
-        except ValueError as e:
-            # Response blocked by safety filters or other content policy
-            finish_reason = getattr(response.candidates[0], 'finish_reason', None) if response.candidates else None
-            if finish_reason == 2:  # SAFETY
-                return "I cannot provide a response to this query due to content safety policies."
-            elif finish_reason == 3:  # RECITATION
-                return "I cannot provide a response as it may contain recited content."
-            else:
-                return "I cannot generate a response for this query."
+        except (ValueError, AttributeError):
+            # Gemini blocked the response - return friendly message
+            return "I apologize, but I cannot generate a response for this query at the moment. Please try rephrasing your question or try a different query."
 
     except Exception as e:
         logger.error(f"Gemini API error: {str(e)}")
