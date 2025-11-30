@@ -28,7 +28,7 @@ def get_azure_client():
     )
 
 
-def get_gemini_client():
+def get_gemini_client(model_name: str = 'gemini-2.5-flash'):
     """Initialize Google Gemini client."""
     api_key = os.getenv("GEMINI_API_KEY", "")
 
@@ -36,7 +36,7 @@ def get_gemini_client():
         raise ValueError("GEMINI_API_KEY environment variable not set")
 
     genai.configure(api_key=api_key)
-    return genai.GenerativeModel('gemini-1.5-pro')
+    return genai.GenerativeModel(model_name)
 
 
 def format_sources_for_context(sources: List[tuple]) -> str:
@@ -139,10 +139,10 @@ async def generate_azure_response(messages: List[dict], temperature: float) -> s
         )
 
 
-async def generate_gemini_response(prompt: str, temperature: float) -> str:
+async def generate_gemini_response(prompt: str, temperature: float, model_name: str = 'gemini-2.5-flash') -> str:
     """Generate response using Google Gemini."""
     try:
-        model = get_gemini_client()
+        model = get_gemini_client(model_name)
         generation_config = {
             "temperature": temperature,
             "max_output_tokens": 1000,
@@ -194,10 +194,10 @@ async def chat_with_documents(request: Request, body: ChatRequest):
             messages = create_chat_messages(body.query, context)
             answer = await generate_azure_response(messages, body.temperature)
             model_used = "Azure GPT-4o-mini"
-        elif body.model == "gemini":
+        elif body.model in ["gemini", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"]:
             prompt = create_rag_prompt(body.query, context)
-            answer = await generate_gemini_response(prompt, body.temperature)
-            model_used = "Google Gemini Pro"
+            answer = await generate_gemini_response(prompt, body.temperature, body.model)
+            model_used = f"Google Gemini ({body.model})"
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

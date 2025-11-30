@@ -87,8 +87,7 @@ def _scrub_raw(parsed):
 
 def _format_output(parsed: Any) -> str:
     """
-    Format chat response in human-readable format.
-    Shows the answer and metadata, but hides sensitive source content.
+    Format chat response - show only the answer text.
     """
 
     if parsed is None:
@@ -98,47 +97,8 @@ def _format_output(parsed: Any) -> str:
         return parsed
 
     if isinstance(parsed, dict):
-        # Chat endpoint response format
-        answer = parsed.get("answer", "")
-        model_used = parsed.get("model_used", "Unknown")
-        sources = parsed.get("sources", [])
-
-        output_parts = []
-
-        # Add answer
-        output_parts.append("=" * 60)
-        output_parts.append("ANSWER:")
-        output_parts.append("=" * 60)
-        output_parts.append(answer)
-        output_parts.append("")
-
-        # Add model info
-        output_parts.append("=" * 60)
-        output_parts.append("MODEL INFORMATION:")
-        output_parts.append("=" * 60)
-        output_parts.append(f"Model Used: {model_used}")
-        output_parts.append(f"Number of Sources: {len(sources)}")
-        output_parts.append("")
-
-        # Add source metadata (without content)
-        if sources:
-            output_parts.append("=" * 60)
-            output_parts.append("SOURCE DOCUMENTS:")
-            output_parts.append("=" * 60)
-
-            for idx, source in enumerate(sources, 1):
-                if isinstance(source, dict):
-                    score = source.get("score", 0)
-                    metadata = source.get("metadata", {})
-
-                    output_parts.append(f"\n--- Source #{idx} ---")
-                    output_parts.append(f"Relevance Score: {round(score, 4)}")
-                    output_parts.append(f"File ID: {metadata.get('file_id', 'N/A')}")
-                    output_parts.append(f"User ID: {metadata.get('user_id', 'N/A')}")
-                    output_parts.append(f"Document Source: {metadata.get('source', 'N/A')}")
-                    output_parts.append("Content: (hidden for security)")
-
-        return "\n".join(output_parts)
+        # Extract and return only the answer text
+        return parsed.get("answer", "(no answer)")
 
     # Fallback to JSON for unexpected formats
     return json.dumps(parsed, indent=2)

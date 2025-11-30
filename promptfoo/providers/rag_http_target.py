@@ -222,7 +222,7 @@ def _scrub_raw(parsed):
 
 def _format_output(parsed: Any) -> str:
     """
-    SAFE version — show only metadata, no document content.
+    Minimal output - show only document count and scores.
     """
 
     if parsed is None:
@@ -236,22 +236,13 @@ def _format_output(parsed: Any) -> str:
 
     if isinstance(parsed, list):
         lines = []
+        lines.append(f"Found {len(parsed)} documents:")
         for idx, entry in enumerate(parsed, 1):
             try:
                 document, score = entry
+                lines.append(f"  Document #{idx}: Score {round(score, 4)}")
             except Exception:
                 return json.dumps(parsed, indent=2)
-
-            meta = document.get("metadata", {})
-
-            lines.append(
-                f"\n--- Document #{idx} ---\n"
-                f"File ID: {meta.get('file_id')}\n"
-                f"User ID: {meta.get('user_id')}\n"
-                f"Score: {round(score, 4)}\n"
-                f"Source: {meta.get('source')}\n"
-                f"Content: (hidden)\n"
-            )
 
         return "\n".join(lines)
 

@@ -351,7 +351,7 @@ targets:
       defaultFileId: file_1764417855460_eeomtbuq4
       defaultEntityId: acme-corp
       defaultK: 4
-      defaultModel: gemini
+      defaultModel: gemini-2.5-flash
       defaultTemperature: 0.7
 
 redteam:

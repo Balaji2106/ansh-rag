@@ -11,7 +11,7 @@ providers:
       endpoint: /chat
       method: POST
       defaultK: 4
-      defaultModel: gemini
+      defaultModel: gemini-2.5-flash
       defaultTemperature: 0.7
 
 prompts:

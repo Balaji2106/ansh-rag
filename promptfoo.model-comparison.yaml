@@ -15,7 +15,7 @@ providers:
       defaultFileId: testid1
       defaultEntityId: model-compare
       defaultK: 4
-      defaultModel: gemini
+      defaultModel: gemini-2.5-flash
       defaultTemperature: 0.7
 
   # Provider 2: Azure GPT-4o-mini (Alternative)
