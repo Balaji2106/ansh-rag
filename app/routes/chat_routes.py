@@ -143,13 +143,24 @@ async def generate_gemini_response(prompt: str, temperature: float, model_name: 
     """Generate response using Google Gemini."""
     try:
         model = get_gemini_client(model_name)
+
+        # Configure safety settings to be more permissive for internal RAG use
+        safety_settings = [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+        ]
+
         generation_config = {
             "temperature": temperature,
             "max_output_tokens": 1000,
         }
+
         response = model.generate_content(
             prompt,
-            generation_config=generation_config
+            generation_config=generation_config,
+            safety_settings=safety_settings
         )
 
         # Check if response has text (not blocked by safety filters)
