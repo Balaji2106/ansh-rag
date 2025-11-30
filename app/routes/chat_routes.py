@@ -5,6 +5,7 @@ from fastapi import APIRouter, Request, HTTPException, status
 from openai import AzureOpenAI
 from azure.core.credentials import AzureKeyCredential
 import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
 from app.config import logger, vector_store
 from app.models import ChatRequest, ChatResponse, SourceDocument
@@ -145,12 +146,12 @@ async def generate_gemini_response(prompt: str, temperature: float, model_name: 
         model = get_gemini_client(model_name)
 
         # Configure safety settings to be more permissive for internal RAG use
-        safety_settings = [
-            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-        ]
+        safety_settings = {
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+        }
 
         generation_config = {
             "temperature": temperature,
