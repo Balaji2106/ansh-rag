@@ -4,6 +4,7 @@ from typing import List
 from fastapi import APIRouter, Request, HTTPException, status
 from openai import AzureOpenAI
 import google.generativeai as genai
+import ollama
 
 from app.config import logger, vector_store
 from app.models import ChatRequest, ChatResponse, SourceDocument
@@ -168,6 +169,35 @@ async def generate_gemini_response(prompt: str, temperature: float, model_name: 
         )
 
 
+async def generate_ollama_response(prompt: str, temperature: float) -> str:
+    """Generate response using Ollama (DeepSeek R1) - local LLM."""
+    try:
+        ollama_host = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+        ollama_model = os.getenv("OLLAMA_MODEL", "deepseek-r1:latest")
+
+        # Create Ollama client with custom host
+        client = ollama.Client(host=ollama_host)
+
+        # Generate response
+        response = client.generate(
+            model=ollama_model,
+            prompt=prompt,
+            options={
+                "temperature": temperature,
+                "num_predict": 1000,  # max tokens
+            }
+        )
+
+        return response['response']
+
+    except Exception as e:
+        logger.error(f"Ollama error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ollama error: {str(e)}"
+        )
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat_with_documents(request: Request, body: ChatRequest):
     """
@@ -208,6 +238,11 @@ async def chat_with_documents(request: Request, body: ChatRequest):
             prompt = create_rag_prompt(body.query, context)
             answer = await generate_gemini_response(prompt, body.temperature, actual_model)
             model_used = f"Google Gemini ({actual_model})"
+        elif body.model in ["ollama", "deepseek-r1", "deepseek-r1:latest"]:
+            prompt = create_rag_prompt(body.query, context)
+            answer = await generate_ollama_response(prompt, body.temperature)
+            ollama_model = os.getenv("OLLAMA_MODEL", "deepseek-r1:latest")
+            model_used = f"Ollama ({ollama_model})"
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
